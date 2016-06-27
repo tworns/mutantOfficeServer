@@ -5,7 +5,7 @@ var dotenv = require('dotenv').load();
 var app = express();
 var server = http.createServer(app);
 var twilio = require('twilio');
-
+var mailgun = require('mailgun-js');
 //Firebase auth
   firebase.initializeApp({
   serviceAccount: "firebase-credentials.json",

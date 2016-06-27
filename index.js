@@ -5,7 +5,7 @@ var dotenv = require('dotenv').load();
 var app = express();
 var server = http.createServer(app);
 var twilio = require('twilio');
-var mailgun = require('mailgun-js');
+var Mailgun = require('mailgun-js');
 //Firebase auth
   firebase.initializeApp({
   serviceAccount: "firebase-credentials.json",
@@ -13,6 +13,7 @@ var mailgun = require('mailgun-js');
 });
 //Twilio auth and create twilio client
 var twilioClient = twilio(process.env.TWILIO_SID, process.env.TWILIO_AUTH_TOKEN);
+//authenticate and create mailgun client
 
 //get firebase ref
 var refRoot = firebase.database().ref();
@@ -30,6 +31,25 @@ textRef.on('child_added',function(snapshot){
    }
 });
 });
+
+var mailgun = new Mailgun({apiKey:process.env.MAILGUN_PRIV,
+  domain: process.env.MAILGUN_DOM}
+);
+var emailRef = refRoot.child('email');
+emailRef.on('child_added',function(snapshot){
+  var val = snapshot.val();
+  var mailData = {
+    from: 'postmaster@' +process.env.MAILGUN_DOM,
+    to: val.addr,
+    subject: 'Thanks for Registering',
+    text: 'Thank you for Registering with Mutant Office!'
+  };
+  mailgun.messages().send(mailData, function(error, body){
+    console.log(body);
+    console.log("ERROR:: " + error);
+  });
+});
+
 
 server.listen(3030,function(){
   console.log("Connected on port 3030");
